@@ -1,0 +1,35 @@
+{
+    "name": "entryninja/elastic-apm-laravel",
+    "description": "A package to integrate Elastic APM into Laravel",
+    "type": "library",
+    "license": "GNU General Public License v3.0",
+    "authors": [
+        {
+            "name": "George Boot",
+            "email": "george@entryninja.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.1",
+        "illuminate/database": "5.5.x|5.6.x",
+        "illuminate/http": "5.5.x|5.6.x",
+        "illuminate/routing": "5.5.x|5.6.x",
+        "illuminate/support": "5.5.x|5.6.x",
+        "philkra/elastic-apm-php-agent": "^6.2",
+        "ramsey/uuid": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "EntryNinja\\ElasticApmLaravel\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "extra": {
+        "laravel": {
+            "providers": [
+                "EntryNinja\\ElasticApmLaravel\\Providers\\ElasticApmServiceProvider"
+            ]
+        }
+    }
+}
