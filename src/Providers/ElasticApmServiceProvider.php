@@ -4,6 +4,7 @@ namespace EntryNinja\ElasticApmLaravel\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Collection;
 
 class ElasticApmServiceProvider extends ServiceProvider
 {
@@ -15,34 +16,14 @@ class ElasticApmServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->app->events->listen(QueryExecuted::class, function (QueryExecuted $query) {
-            $stackTrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 50);
-            $stackTrace = collect($stackTrace)->map(function ($trace) {
-                return array_set($trace, 'file', str_replace(base_path(), '', array_get($trace, 'file')));
-            })->filter(function ($trace) {
-                return !starts_with(array_get($trace, 'file'), [
-                    '/vendor'
-                ]);
-            })->map(function ($trace) {
-                // $sourceCode = collect(file(base_path().array_get($trace, 'file')))->filter(function ($code, $line) use ($trace) {
-                //     $lineStart = array_get($trace, 'line') - 5;
-                //     $lineStop = array_get($trace, 'line') + 5;
-                    
-                //     return $line >= $lineStart && $line <= $lineStop;
-                // })->groupBy(function ($code, $line) use ($trace) {
-                //     if ($line < array_get($trace, 'line')) {
-                //         return 'pre_context';
-                //     }
+            $stackTrace = $this->stripVendorTraces(
+                collect(
+                    debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 50)
+                )
+            );
 
-                //     if ($line == array_get($trace, 'line')) {
-                //         return 'context_line';
-                //     }
-
-                //     if ($line > array_get($trace, 'line')) {
-                //         return 'post_context';
-                //     }
-
-                //     return 'trash';
-                // });
+            $stackTrace = $stackTrace->map(function ($trace) {
+                $sourceCode = $this->getSourceCode($trace);
 
                 // // $vars = array_get($trace, 'args'); // returns [0=>Object, 1=>'string',2=>false] etc.
                 // // if (empty($vars)) {
@@ -100,5 +81,40 @@ class ElasticApmServiceProvider extends ServiceProvider
         return new \PhilKra\Agent([
             'appName' => config('app.name'),
         ]);
+    }
+
+    protected function stripVendorTraces(Collection $strackTrace): Collection
+    {
+        return collect($stackTrace)->map(function ($trace) {
+            return array_set($trace, 'file', str_replace(base_path(), '', array_get($trace, 'file')));
+        })->filter(function ($trace) {
+            return !starts_with(array_get($trace, 'file'), [
+                '/vendor'
+            ]);
+        });
+    }
+
+    protected function getSourceCode(array $stackTrace): Collection
+    {
+        return collect(file(base_path().array_get($stackTrace, 'file')))->filter(function ($code, $line) use ($stackTrace) {
+            $lineStart = array_get($stackTrace, 'line') - 5;
+            $lineStop = array_get($stackTrace, 'line') + 5;
+            
+            return $line >= $lineStart && $line <= $lineStop;
+        })->groupBy(function ($code, $line) use ($stackTrace) {
+            if ($line < array_get($stackTrace, 'line')) {
+                return 'pre_context';
+            }
+
+            if ($line == array_get($stackTrace, 'line')) {
+                return 'context_line';
+            }
+
+            if ($line > array_get($stackTrace, 'line')) {
+                return 'post_context';
+            }
+
+            return 'trash';
+        });
     }
 }
