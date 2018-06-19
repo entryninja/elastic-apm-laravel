@@ -1,2 +1,4 @@
 # elastic-apm-laravel
 A package to integrate Elastic APM into Laravel
+
+Caution: this package is WIP!
