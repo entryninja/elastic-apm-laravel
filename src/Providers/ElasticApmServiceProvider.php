@@ -99,16 +99,6 @@ class ElasticApmServiceProvider extends ServiceProvider
     {
         return new \PhilKra\Agent([
             'appName' => config('app.name'),
-        ], [
-            'user' => [
-                //
-            ],
-            'tags' => [
-                //
-            ],
-            'custom' => [
-                //
-            ]
         ]);
     }
 }
