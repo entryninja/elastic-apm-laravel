@@ -1,5 +1,13 @@
 {
     "name": "entryninja/elastic-apm-laravel",
+    "keywords": [
+        "laravel",
+        "elastic",
+        "APM",
+        "Lumen",
+        "monitoring",
+        "debug"
+    ],
     "description": "A package to integrate Elastic APM into Laravel",
     "type": "library",
     "license": "GPL-3.0-or-later",
